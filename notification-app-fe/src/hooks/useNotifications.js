@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { getNotifications } from "../api/notificationApi";
 
-export const useNotifications = (page, limit, notificationType) => {
+export const useNotifications = (
+  page,
+  limit,
+  notificationType
+) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -19,10 +23,10 @@ export const useNotifications = (page, limit, notificationType) => {
           notificationType
         );
 
-        setNotifications(data.notifications || []);
-        setTotalPages(data.totalPages || 1);
+        setNotifications(data.notifications);
+        setTotalPages(data.totalPages);
       } catch (err) {
-        setError(err.message || "Something went wrong");
+        setError(err.message);
       } finally {
         setLoading(false);
       }
