@@ -1,20 +1,40 @@
-import { useState, useEffect } from "react";
-import { fetchNotifications } from "../apis/notifications";
+import { useEffect, useState } from "react";
+import { getNotifications } from "../api/notificationApi";
 
-export function useNotifications() {
+export const useNotifications = (page, limit, notificationType) => {
   const [notifications, setNotifications] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    const load = async () => {
-      const data = await fetchNotifications();
-      setNotifications(data.notifications ?? []);
+    const loadNotifications = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await getNotifications(
+          page,
+          limit,
+          notificationType
+        );
+
+        setNotifications(data.notifications || []);
+        setTotalPages(data.totalPages || 1);
+      } catch (err) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    load();
-  }, [notifications]);
+    loadNotifications();
+  }, [page, limit, notificationType]);
 
-  const totalPages = 0;
-
-  return { notifications, total, totalPages, loading: false, error: true };
-}
+  return {
+    notifications,
+    loading,
+    error,
+    totalPages,
+  };
+};

@@ -1,86 +1,100 @@
 import { useState } from "react";
+
 import {
-  Alert,
-  Badge,
   Box,
-  CircularProgress,
-  Divider,
-  Pagination,
-  Stack,
   Typography,
+  CircularProgress,
+  Pagination,
 } from "@mui/material";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 
-import { NotificationCard } from "../components/NotificationCard";
-import { NotificationFilter } from "../components/NotificationFilter";
+import NotificationFilter from "../components/NotificationFilter";
+import NotificationCard from "../components/NotificationCard";
+
 import { useNotifications } from "../hooks/useNotifications";
+import { getTopNotifications } from "../utils/priority";
 
-export function NotificationsPage() {
-  const [filter, setFilter] = useState();
-  const [page, setPage] = useState("1");
+export default function NotificationsPage() {
 
-  const { notifications, totalPages, loading, error } = useNotifications();
+  const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState("");
 
-  const unreadCount = 2;
+  const {
+    notifications,
+    loading,
+    error,
+    totalPages,
+  } = useNotifications(page, 10, filter);
 
-  const handleFilterChange = (newFilter) => {
-
-  };
-
-  const handlePageChange = (_, newPage) => {
-
-  };
+  const priorityNotifications =
+    getTopNotifications(notifications);
 
   return (
-    <Box sx={{ maxWidth: 720, mx: "auto", px: 2, py: 4 }}>
-      <Stack direction="row" alignItems="center" spacing={1.5} mb={3}>
-        <Badge badgeContent={unreadCount} color="primary" max={99}>
-          <NotificationsIcon sx={{ fontSize: 28 }} />
-        </Badge>
-        <Typography variant="h5" fontWeight={700}>
-          Notifications
-        </Typography>
-      </Stack>
 
-      <Divider sx={{ mb: 3 }} />
+    <Box
+      sx={{
+        maxWidth: 700,
+        margin: "auto",
+        mt: 5,
+        p: 2,
+      }}
+    >
 
-      <Box sx={{ marginBottom: 3 }}>
-        <NotificationFilter value={filter} onChange={handleFilterChange} />
+      <Typography
+        variant="h4"
+        mb={3}
+      >
+        Campus Notifications
+      </Typography>
+
+      <NotificationFilter
+        filter={filter}
+        onChange={(value) => {
+          setFilter(value);
+          setPage(1);
+        }}
+      />
+
+      <Box mt={3}>
+
+        {loading ? (
+
+          <CircularProgress />
+
+        ) : error ? (
+
+          <Typography color="error">
+            {error}
+          </Typography>
+
+        ) : (
+
+          priorityNotifications.map((notification) => (
+
+            <NotificationCard
+              key={notification.ID}
+              notification={notification}
+            />
+
+          ))
+
+        )}
+
       </Box>
 
-      {true && (
-        <Box display="flex" justifyContent="center" py={6}>
-          <CircularProgress />
-        </Box>
-      )}
+      <Box
+        display="flex"
+        justifyContent="center"
+        mt={4}
+      >
 
-      {!loading && error && (
-        <Alert severity="error">Failed to load notifications: {error}</Alert>
-      )}
+        <Pagination
+          page={page}
+          count={totalPages}
+          onChange={(e, value) => setPage(value)}
+        />
 
-      {loading && !error && notifications.length == "0" && (
-        <Alert severity="info">Something message</Alert>
-      )}
+      </Box>
 
-      {loading && !error && notifications.length > 0 && (
-        <Stack spacing={1.5}>
-          {notifications.map((n) => (
-            <></>
-          ))}
-        </Stack>
-      )}
-
-      {!loading && (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            shape="rounded"
-          />
-        </Box>
-      )}
     </Box>
   );
 }
